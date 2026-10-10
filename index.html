@@ -4,17 +4,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pul to‘plash</title>
 
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
+    <title>Pul to‘plash | Moliyaviy maqsadlar</title>
+
+   
     <link rel="stylesheet" href="./style.css">
+
+    <link
+        rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>"
+    >
+
     <script type="module" src="./app.js"></script>
 </head>
-<body>
 
+<body>
+   
     <header class="navbar">
         <a href="#" class="logo">💰 Pul to‘plash</a>
-        <a href="https://t.me/abdukabirov_08" class="telegram-top">
+
+        <a
+            href="https://t.me/abdukabirov_08"
+            class="telegram-top"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
             Telegram
         </a>
     </header>
@@ -22,29 +36,42 @@
     <main>
         <section class="hero">
             <span class="hero-icon">🎯</span>
-            <h1>Maqsading sari <span>bir qadam!</span></h1>
-            <p>Pulingni boshqar, maqsadlaringni belgilab, orzularingga erish.</p>
+
+            <h1>Maqsadlaringiz sari ishonch bilan qadam tashlang!</h1>
+
+            <p>
+                Mablag‘laringizni samarali boshqaring, jamg‘armalaringizni
+                kuzatib boring va moliyaviy maqsadlaringizga erishing.
+            </p>
         </section>
 
         <section class="auth-card">
             <div class="card-icon">👋</div>
-            <h2>Hisobingga kir</h2>
-            <p class="subtitle">Pul to‘plashni davom ettir</p>
+
+            <h2>Hisobingizga kiring</h2>
+
+            <p class="subtitle">
+                Jamg‘armalaringizni boshqarishni davom ettiring
+            </p>
 
             <form id="login-form">
-                <label for="email">Email manziling</label>
+                <label for="email">Email manzilingiz</label>
+
                 <input
                     type="email"
                     id="email"
                     placeholder="example@gmail.com"
+                    autocomplete="email"
                     required
                 >
 
-                <label for="password">Paroling</label>
+                <label for="password">Parolingiz</label>
+
                 <input
                     type="password"
                     id="password"
-                    placeholder="Parolingni kiriting"
+                    placeholder="Parolingizni kiriting"
+                    autocomplete="current-password"
                     required
                 >
 
@@ -56,26 +83,33 @@
             <p id="auth-message" aria-live="polite"></p>
 
             <a href="#" id="reset-password" class="reset-link">
-                Parolni unutdingmi?
+                Parolni unutdingizmi?
             </a>
 
             <div class="divider">
                 <span>yoki</span>
             </div>
 
-            <button id="register-button" class="register-button">
+            <button
+                type="button"
+                id="register-button"
+                class="register-button"
+            >
                 Yangi hisob yaratish
             </button>
 
             <p class="help-text">
-                Muammo bo‘lsa, Telegram orqali yordam olishing mumkin.
+                Qo‘shimcha yordam kerakmi?
+                Telegram orqali biz bilan bog‘laning.
             </p>
         </section>
 
         <footer>
-            <p>© 2026 Pul to‘plash. Barcha huquqlar himoyalangan.</p>
+            <p>
+                © 2026 Pul to‘plash. Barcha huquqlar himoyalangan.
+            </p>
         </footer>
     </main>
-<script src="./app.js"></script>
+    <script src="./app.js"></script>
 </body>
 </html>

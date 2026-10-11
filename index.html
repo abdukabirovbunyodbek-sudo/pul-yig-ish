@@ -1,81 +1,117 @@
-
 <!DOCTYPE html>
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pul to‘plash</title>
-
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
     <link rel="stylesheet" href="./style.css">
-    <script type="module" src="./app.js"></script>
+    <script src="./app.js" defer></script>
 </head>
 <body>
-
     <header class="navbar">
         <a href="#" class="logo">💰 Pul to‘plash</a>
-        <a href="https://t.me/abdukabirov_08" class="telegram-top">
-            Telegram
-        </a>
+        <span class="top-label">Maqsadlaring sari!</span>
     </header>
 
-    <main>
-        <section class="hero">
+    <main class="container">
+        <section class="intro">
             <span class="hero-icon">🎯</span>
             <h1>Maqsading sari <span>bir qadam!</span></h1>
-            <p>Pulingni boshqar, maqsadlaringni belgilab, orzularingga erish.</p>
+            <p>
+                Pulingni boshqar, maqsadlaringni belgilab,
+                orzularingga bosqichma-bosqich erish.
+            </p>
+
+            <div class="info-list">
+                <div class="info-item">
+                    <span>🎯</span>
+                    <div>
+                        <h3>Bir nechta maqsad</h3>
+                        <p>Har bir orzu uchun alohida jamg‘arma yarat.</p>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <span>💵</span>
+                    <div>
+                        <h3>Pul qo‘shib bor</h3>
+                        <p>Yig‘gan pulingni istalgan vaqtda yangila.</p>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <span>📊</span>
+                    <div>
+                        <h3>Natijangni kuzat</h3>
+                        <p>Maqsadingga qancha qolganini ko‘rib bor.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quote">
+                “Katta maqsadlar kichik qadamlardan boshlanadi.”
+            </div>
         </section>
 
-        <section class="auth-card">
-            <div class="card-icon">👋</div>
-            <h2>Hisobingga kir</h2>
-            <p class="subtitle">Pul to‘plashni davom ettir</p>
+        <section class="tracker">
+            <div class="tracker-heading">
+                <div>
+                    <p class="eyebrow">SHAXSIY JAMG‘ARMANG</p>
+                    <h2>Maqsadlaring</h2>
+                </div>
+                <span class="target-icon">💎</span>
+            </div>
 
-            <form id="login-form">
-                <label for="email">Email manziling</label>
+            <div class="summary">
+                <div>
+                    <p>Jami yig‘ilgan pul</p>
+                    <h3 id="total-saved">0 so‘m</h3>
+                </div>
+                <div>
+                    <p>Maqsadlar soni</p>
+                    <h3 id="goal-count">0 ta</h3>
+                </div>
+            </div>
+
+            <form id="goal-form">
+                <h3>Yangi maqsad qo‘shish</h3>
+
+                <label for="goal-name">Maqsad nomi</label>
                 <input
-                    type="email"
-                    id="email"
-                    placeholder="example@gmail.com"
+                    type="text"
+                    id="goal-name"
+                    placeholder="Masalan: Gaming noutbuk"
                     required
                 >
 
-                <label for="password">Paroling</label>
+                <label for="goal-target">Kerakli summa (so‘m)</label>
                 <input
-                    type="password"
-                    id="password"
-                    placeholder="Parolingni kiriting"
+                    type="number"
+                    id="goal-target"
+                    placeholder="Masalan: 6000000"
+                    min="1"
+                    step="1"
                     required
                 >
 
-                <button type="submit" id="login-button">
-                    Hisobga kirish
+                <button type="submit" class="primary-button">
+                    + Maqsad qo‘shish
                 </button>
             </form>
 
-            <p id="auth-message" aria-live="polite"></p>
+            <p id="message" aria-live="polite"></p>
 
-            <a href="#" id="reset-password" class="reset-link">
-                Parolni unutdingmi?
-            </a>
-
-            <div class="divider">
-                <span>yoki</span>
+            <div class="goals-heading">
+                <h3>Saqlangan maqsadlar</h3>
+                <span id="goals-label">0 ta maqsad</span>
             </div>
 
-            <button id="register-button" class="register-button">
-                Yangi hisob yaratish
-            </button>
-
-            <p class="help-text">
-                Muammo bo‘lsa, Telegram orqali yordam olishing mumkin.
-            </p>
+            <div id="goals-list" class="goals-list"></div>
         </section>
-
-        <footer>
-            <p>© 2026 Pul to‘plash. Barcha huquqlar himoyalangan.</p>
-        </footer>
     </main>
 
+    <footer>
+        © 2026 Pul to‘plash. Orzularing sari olg‘a!
+    </footer>
 </body>
 </html>

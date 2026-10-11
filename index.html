@@ -1,117 +1,137 @@
+
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pul to‘plash</title>
-    <link rel="stylesheet" href="./style.css">
-    <script src="./app.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maqsadim — Pul yig‘ish</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header class="navbar">
-        <a href="#" class="logo">💰 Pul to‘plash</a>
-        <span class="top-label">Maqsadlaring sari!</span>
-    </header>
+  <header class="navbar">
+    <a class="logo" href="#">💰 Maqsadim</a>
+    <div id="user-area" class="hidden">
+      <span id="user-email"></span>
+      <button id="logout" class="btn secondary">Chiqish</button>
+    </div>
+  </header>
 
-    <main class="container">
-        <section class="intro">
-            <span class="hero-icon">🎯</span>
-            <h1>Maqsading sari <span>bir qadam!</span></h1>
-            <p>
-                Pulingni boshqar, maqsadlaringni belgilab,
-                orzularingga bosqichma-bosqich erish.
-            </p>
+  <main>
+    <!-- Kirish va ro‘yxatdan o‘tish -->
+    <section id="auth-page" class="auth-layout">
+      <div class="hero">
+        <p class="tag">KICHIK QADAMLAR — KATTA MAQSADLAR</p>
+        <h1>Orzularing sari<br><span>pul yig‘!</span></h1>
+        <p>Pulingni boshqar, maqsad qo‘y va har kuni oldinga intil.</p>
+      </div>
 
-            <div class="info-list">
-                <div class="info-item">
-                    <span>🎯</span>
-                    <div>
-                        <h3>Bir nechta maqsad</h3>
-                        <p>Har bir orzu uchun alohida jamg‘arma yarat.</p>
-                    </div>
-                </div>
+      <div class="card auth-card">
+        <div class="tabs">
+          <button id="login-tab" class="tab active">Kirish</button>
+          <button id="signup-tab" class="tab">Ro‘yxatdan o‘tish</button>
+        </div>
+        <h2 id="auth-title">Xush kelibsan!</h2>
+        <form id="auth-form">
+          <label>Email manziling</label>
+          <input id="email" type="email" placeholder="email@example.com" required>
 
-                <div class="info-item">
-                    <span>💵</span>
-                    <div>
-                        <h3>Pul qo‘shib bor</h3>
-                        <p>Yig‘gan pulingni istalgan vaqtda yangila.</p>
-                    </div>
-                </div>
+          <label>Parol</label>
+          <input id="password" type="password" minlength="6"
+                 placeholder="Kamida 6 ta belgi" required>
 
-                <div class="info-item">
-                    <span>📊</span>
-                    <div>
-                        <h3>Natijangni kuzat</h3>
-                        <p>Maqsadingga qancha qolganini ko‘rib bor.</p>
-                    </div>
-                </div>
-            </div>
+          <button id="auth-submit" class="btn primary full" type="submit">Kirish</button>
+          <p id="auth-message" class="message"></p>
+        </form>
+      </div>
+    </section>
 
-            <div class="quote">
-                “Katta maqsadlar kichik qadamlardan boshlanadi.”
-            </div>
+    <!-- Asosiy profil -->
+    <section id="dashboard" class="hidden">
+      <div class="welcome">
+        <div>
+          <p class="tag">SHAXSIY PANEL</p>
+          <h1>Maqsading sari olg‘a! 🚀</h1>
+          <p class="muted">Bugungi kichik harakating ham muhim.</p>
+        </div>
+        <span id="today" class="date-pill"></span>
+      </div>
+
+      <div class="stats">
+        <div class="stat balance">
+          <p>💵 Hozirgi jamg‘arma</p>
+          <h2 id="balance">0 so‘m</h2>
+        </div>
+        <div class="stat">
+          <p>🎯 Maqsad summasi</p>
+          <h2 id="goal-total">0 so‘m</h2>
+        </div>
+        <div class="stat">
+          <p>📈 Qolgan summa</p>
+          <h2 id="remaining">0 so‘m</h2>
+        </div>
+      </div>
+
+      <div class="columns">
+        <section class="card">
+          <h2>🎯 Mening maqsadim</h2>
+          <form id="goal-form">
+            <label>Nima uchun pul yig‘yapsan?</label>
+            <input id="goal-name" maxlength="100"
+                   placeholder="Masalan: gaming xonam uchun" required>
+            <label>Qancha pul kerak? (so‘m)</label>
+            <input id="goal-amount" type="number" min="1"
+                   placeholder="30000000" required>
+            <button class="btn primary full">Maqsadni saqlash</button>
+          </form>
+          <div class="progress-info">
+            <span id="percent">0% bajarildi</span>
+            <span id="progress-text">0 / 0 so‘m</span>
+          </div>
+          <div class="progress"><div id="progress-bar"></div></div>
         </section>
 
-        <section class="tracker">
-            <div class="tracker-heading">
-                <div>
-                    <p class="eyebrow">SHAXSIY JAMG‘ARMANG</p>
-                    <h2>Maqsadlaring</h2>
-                </div>
-                <span class="target-icon">💎</span>
-            </div>
-
-            <div class="summary">
-                <div>
-                    <p>Jami yig‘ilgan pul</p>
-                    <h3 id="total-saved">0 so‘m</h3>
-                </div>
-                <div>
-                    <p>Maqsadlar soni</p>
-                    <h3 id="goal-count">0 ta</h3>
-                </div>
-            </div>
-
-            <form id="goal-form">
-                <h3>Yangi maqsad qo‘shish</h3>
-
-                <label for="goal-name">Maqsad nomi</label>
-                <input
-                    type="text"
-                    id="goal-name"
-                    placeholder="Masalan: Gaming noutbuk"
-                    required
-                >
-
-                <label for="goal-target">Kerakli summa (so‘m)</label>
-                <input
-                    type="number"
-                    id="goal-target"
-                    placeholder="Masalan: 6000000"
-                    min="1"
-                    step="1"
-                    required
-                >
-
-                <button type="submit" class="primary-button">
-                    + Maqsad qo‘shish
-                </button>
-            </form>
-
-            <p id="message" aria-live="polite"></p>
-
-            <div class="goals-heading">
-                <h3>Saqlangan maqsadlar</h3>
-                <span id="goals-label">0 ta maqsad</span>
-            </div>
-
-            <div id="goals-list" class="goals-list"></div>
+        <section class="card">
+          <h2>💸 Pul hisob-kitobi</h2>
+          <form id="money-form">
+            <label>Amaliyot</label>
+            <select id="money-type">
+              <option value="income">Pul qo‘shish (+)</option>
+              <option value="expense">Xarajat ayirish (−)</option>
+            </select>
+            <label>Summa (so‘m)</label>
+            <input id="money-amount" type="number" min="1"
+                   placeholder="50000" required>
+            <label>Izoh</label>
+            <input id="money-note" maxlength="100"
+                   placeholder="Masalan: haftalik pulim">
+            <button class="btn primary full">Hisobga kiritish</button>
+          </form>
         </section>
-    </main>
+      </div>
 
-    <footer>
-        © 2026 Pul to‘plash. Orzularing sari olg‘a!
-    </footer>
+      <div class="columns lower">
+        <section class="card">
+          <h2>✅ Kunlik ishlar</h2>
+          <form id="task-form" class="task-form">
+            <input id="task-input" maxlength="140"
+                   placeholder="Bugun nima qilasan?" required>
+            <button class="btn primary">Qo‘shish</button>
+          </form>
+          <div id="task-list"></div>
+          <p id="no-tasks" class="empty">Hali vazifa qo‘shilmadi.</p>
+        </section>
+
+        <section class="card">
+          <h2>📒 Pul tarixi</h2>
+          <div id="history"></div>
+          <p id="no-history" class="empty">Hali pul harakati yo‘q.</p>
+        </section>
+      </div>
+      <p class="footer-note">Maqsadim pul o‘tkazmaydi — faqat sen kiritgan hisoblarni yuritadi.</p>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+  <script type="module" src="app.js"></script>
 </body>
 </html>

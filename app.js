@@ -1,191 +1,361 @@
-const elForm = document.querySelector("#goal-form");
-const elName = document.querySelector("#goal-name");
-const elTarget = document.querySelector("#goal-target");
-const elGoalsList = document.querySelector("#goals-list");
-const elTotalSaved = document.querySelector("#total-saved");
-const elGoalCount = document.querySelector("#goal-count");
-const elGoalsLabel = document.querySelector("#goals-label");
-const elMessage = document.querySelector("#message");
 
-let goals = [];
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 
-try {
-    goals = JSON.parse(localStorage.getItem("pulGoals")) || [];
-} catch {
-    goals = [];
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  onSnapshot,
+  collection,
+  addDoc,
+  deleteDoc,
+  query,
+  orderBy,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+// Firebase Console'dan olingan ma'lumotlarni shu yerga yozasan.
+const firebaseConfig = {
+  apiKey: "BU_YERGA_API_KEY",
+  authDomain: "LOYIHA_ID.firebaseapp.com",
+  projectId: "LOYIHA_ID",
+  storageBucket: "LOYIHA_ID.firebasestorage.app",
+  messagingSenderId: "SENDER_ID",
+  appId: "APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const $ = selector => document.querySelector(selector);
+
+let user = null;
+let goal = { name: "", amount: 0 };
+let transactions = [];
+let tasks = [];
+let stopProfile = null;
+let stopMoney = null;
+let stopTasks = null;
+let mode = "login";
+
+function money(number) {
+  return new Intl.NumberFormat("uz-UZ").format(number || 0) + " so‘m";
 }
 
-function saveGoals() {
-    localStorage.setItem("pulGoals", JSON.stringify(goals));
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[char]));
 }
 
-function formatMoney(amount) {
-    return Number(amount).toLocaleString("uz-UZ") + " so‘m";
+function showMessage(message) {
+  $("#toast").textContent = message;
+  $("#toast").classList.remove("hidden");
+  setTimeout(() => $("#toast").classList.add("hidden"), 2500);
 }
 
-function showMessage(text) {
-    elMessage.textContent = text;
+function balance() {
+  return transactions.reduce((sum, item) => {
+    return sum + (item.type === "income" ? item.amount : -item.amount);
+  }, 0);
 }
 
-function renderGoals() {
-    elGoalsList.replaceChildren();
+// Kirish va ro‘yxatdan o‘tish rejimini almashtirish
+function setMode(newMode) {
+  mode = newMode;
+  $("#login-tab").classList.toggle("active", mode === "login");
+  $("#signup-tab").classList.toggle("active", mode === "signup");
+  $("#auth-title").textContent =
+    mode === "login" ? "Xush kelibsan!" : "Yangi hisob yarat";
+  $("#auth-submit").textContent =
+    mode === "login" ? "Kirish" : "Ro‘yxatdan o‘tish";
+  $("#auth-message").textContent = "";
+}
 
-    const totalSaved = goals.reduce(
-        (sum, goal) => sum + goal.saved,
-        0
-    );
+$("#login-tab").addEventListener("click", () => setMode("login"));
+$("#signup-tab").addEventListener("click", () => setMode("signup"));
 
-    elTotalSaved.textContent = formatMoney(totalSaved);
-    elGoalCount.textContent = goals.length + " ta";
-    elGoalsLabel.textContent = goals.length + " ta maqsad";
+$("#auth-form").addEventListener("submit", async event => {
+  event.preventDefault();
+  const email = $("#email").value.trim();
+  const password = $("#password").value;
+  const button = $("#auth-submit");
 
-    if (goals.length === 0) {
-        const empty = document.createElement("p");
-        empty.className = "empty-message";
-        empty.textContent =
-            "Hali maqsad qo‘shilmadi. Birinchi maqsadingni yarat! 🎯";
+  button.disabled = true;
+  $("#auth-message").textContent = "";
 
-        elGoalsList.append(empty);
-        return;
+  try {
+    if (mode === "signup") {
+      await createUserWithEmailAndPassword(auth, email, password);
+    } else {
+      await signInWithEmailAndPassword(auth, email, password);
     }
-
-    goals.forEach(function (goal) {
-        const card = document.createElement("div");
-        card.className = "goal-card";
-
-        const top = document.createElement("div");
-        top.className = "goal-top";
-
-        const title = document.createElement("h4");
-        title.textContent = goal.name;
-
-        const percent = document.createElement("span");
-        percent.className = "goal-percent";
-
-        const progress = Math.min(
-            100,
-            Math.floor((goal.saved / goal.target) * 100)
-        );
-
-        percent.textContent = progress + "%";
-
-        top.append(title, percent);
-
-        const amounts = document.createElement("div");
-        amounts.className = "goal-amounts";
-
-        const savedText = document.createElement("span");
-        savedText.textContent = "Yig‘ildi: ";
-
-        const savedStrong = document.createElement("strong");
-        savedStrong.textContent = formatMoney(goal.saved);
-        savedText.append(savedStrong);
-
-        const targetText = document.createElement("span");
-        targetText.textContent = "Maqsad: " + formatMoney(goal.target);
-
-        amounts.append(savedText, targetText);
-
-        const track = document.createElement("div");
-        track.className = "progress-track";
-
-        const bar = document.createElement("div");
-        bar.className = "progress-bar";
-        bar.style.width = progress + "%";
-
-        track.append(bar);
-
-        const actions = document.createElement("div");
-        actions.className = "goal-actions";
-
-        const moneyInput = document.createElement("input");
-        moneyInput.type = "number";
-        moneyInput.min = "1";
-        moneyInput.step = "1";
-        moneyInput.placeholder = "Qo‘shiladigan pul";
-        moneyInput.setAttribute("aria-label", goal.name + " uchun pul");
-
-        const addButton = document.createElement("button");
-        addButton.type = "button";
-        addButton.className = "add-money-button";
-        addButton.textContent = "+ Pul qo‘shish";
-
-        addButton.addEventListener("click", function () {
-            const amount = Number(moneyInput.value);
-
-            if (!Number.isSafeInteger(amount) || amount <= 0) {
-                showMessage("Iltimos, to‘g‘ri summa kiriting.");
-                return;
-            }
-
-            if (!Number.isSafeInteger(goal.saved + amount)) {
-                showMessage("Bu summa juda katta.");
-                return;
-            }
-
-            goal.saved += amount;
-            saveGoals();
-            renderGoals();
-
-            showMessage("Pul muvaffaqiyatli qo‘shildi! 💰");
-        });
-
-        actions.append(moneyInput, addButton);
-
-        const deleteButton = document.createElement("button");
-        deleteButton.type = "button";
-        deleteButton.className = "delete-button";
-        deleteButton.textContent = "Maqsadni o‘chirish";
-
-        deleteButton.addEventListener("click", function () {
-            const confirmed = confirm(
-                "Ushbu maqsadni o‘chirmoqchimisiz?"
-            );
-
-            if (!confirmed) return;
-
-            goals = goals.filter(function (item) {
-                return item.id !== goal.id;
-            });
-
-            saveGoals();
-            renderGoals();
-            showMessage("Maqsad o‘chirildi.");
-        });
-
-        card.append(top, amounts, track, actions, deleteButton);
-        elGoalsList.append(card);
-    });
-}
-
-elForm.addEventListener("submit", function (event) {
-    event.preventDefault();
-
-    const name = elName.value.trim();
-    const target = Number(elTarget.value);
-
-    if (!name) {
-        showMessage("Maqsad nomini kiriting.");
-        return;
-    }
-
-    if (!Number.isSafeInteger(target) || target <= 0) {
-        showMessage("Kerakli summani to‘g‘ri kiriting.");
-        return;
-    }
-
-    goals.push({
-        id: Date.now() + Math.random(),
-        name: name,
-        target: target,
-        saved: 0
-    });
-
-    saveGoals();
-    renderGoals();
-
-    elForm.reset();
-    showMessage("Yangi maqsad qo‘shildi! 🎉");
+  } catch (error) {
+    const errors = {
+      "auth/email-already-in-use": "Bu email allaqachon ro‘yxatdan o‘tgan.",
+      "auth/invalid-email": "Email manzilini tekshir.",
+      "auth/weak-password": "Parol kamida 6 ta belgidan iborat bo‘lsin.",
+      "auth/invalid-credential": "Email yoki parol noto‘g‘ri.",
+      "auth/network-request-failed": "Internet aloqasini tekshir."
+    };
+    $("#auth-message").textContent =
+      errors[error.code] || "Xatolik yuz berdi. Firebase sozlamalarini tekshir.";
+  } finally {
+    button.disabled = false;
+  }
 });
 
-renderGoals();
+// Foydalanuvchi kirganda faqat uning ma’lumotlarini yuklash
+onAuthStateChanged(auth, async currentUser => {
+  if (stopProfile) stopProfile();
+  if (stopMoney) stopMoney();
+  if (stopTasks) stopTasks();
+
+  user = currentUser;
+  transactions = [];
+  tasks = [];
+  goal = { name: "", amount: 0 };
+
+  if (!user) {
+    $("#auth-page").classList.remove("hidden");
+    $("#dashboard").classList.add("hidden");
+    $("#user-area").classList.add("hidden");
+    return;
+  }
+
+  $("#auth-page").classList.add("hidden");
+  $("#dashboard").classList.remove("hidden");
+  $("#user-area").classList.remove("hidden");
+  $("#user-email").textContent = user.email || "";
+  $("#today").textContent = new Intl.DateTimeFormat("uz-UZ", {
+    day: "numeric", month: "long", weekday: "long"
+  }).format(new Date());
+
+  const profileRef = doc(db, "users", user.uid);
+  const profile = await getDoc(profileRef);
+
+  if (!profile.exists()) {
+    await setDoc(profileRef, {
+      email: user.email,
+      goalName: "",
+      goalAmount: 0,
+      createdAt: serverTimestamp()
+    });
+  }
+
+  stopProfile = onSnapshot(profileRef, snapshot => {
+    if (!snapshot.exists()) return;
+    const data = snapshot.data();
+    goal = {
+      name: data.goalName || "",
+      amount: Number(data.goalAmount) || 0
+    };
+    render();
+  });
+
+  stopMoney = onSnapshot(
+    query(collection(db, "users", user.uid, "transactions"),
+      orderBy("createdAt", "desc")),
+    snapshot => {
+      transactions = snapshot.docs.map(item => ({
+        id: item.id, ...item.data()
+      }));
+      render();
+    }
+  );
+
+  stopTasks = onSnapshot(
+    query(collection(db, "users", user.uid, "tasks"),
+      orderBy("createdAt", "desc")),
+    snapshot => {
+      tasks = snapshot.docs.map(item => ({
+        id: item.id, ...item.data()
+      }));
+      renderTasks();
+    }
+  );
+});
+
+$("#logout").addEventListener("click", () => signOut(auth));
+
+// Maqsadni saqlash
+$("#goal-form").addEventListener("submit", async event => {
+  event.preventDefault();
+  if (!user) return;
+
+  const name = $("#goal-name").value.trim();
+  const amount = Number($("#goal-amount").value);
+
+  if (!name || !Number.isFinite(amount) || amount <= 0) {
+    showMessage("Maqsad nomi va summasini to‘g‘ri kiriting.");
+    return;
+  }
+
+  try {
+    await updateDoc(doc(db, "users", user.uid), {
+      goalName: name,
+      goalAmount: amount
+    });
+    showMessage("Maqsading saqlandi! 🎯");
+  } catch {
+    showMessage("Maqsadni saqlab bo‘lmadi.");
+  }
+});
+
+// Pul qo‘shish yoki xarajat yozish
+$("#money-form").addEventListener("submit", async event => {
+  event.preventDefault();
+  if (!user) return;
+
+  const type = $("#money-type").value;
+  const amount = Number($("#money-amount").value);
+  const note = $("#money-note").value.trim();
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    showMessage("Summani to‘g‘ri kiriting.");
+    return;
+  }
+
+  if (type === "expense" && amount > balance()) {
+    showMessage("Xarajat jamg‘armangdan ko‘p bo‘lishi mumkin emas.");
+    return;
+  }
+
+  try {
+    await addDoc(collection(db, "users", user.uid, "transactions"), {
+      type,
+      amount,
+      note,
+      createdAt: serverTimestamp()
+    });
+    $("#money-amount").value = "";
+    $("#money-note").value = "";
+    showMessage(type === "income" ? "Pul qo‘shildi! 💰" : "Xarajat yozildi.");
+  } catch {
+    showMessage("Pul harakatini saqlab bo‘lmadi.");
+  }
+});
+
+// Kunlik vazifa qo‘shish
+$("#task-form").addEventListener("submit", async event => {
+  event.preventDefault();
+  if (!user) return;
+
+  const title = $("#task-input").value.trim();
+  if (!title) return;
+
+  try {
+    await addDoc(collection(db, "users", user.uid, "tasks"), {
+      title,
+      done: false,
+      createdAt: serverTimestamp()
+    });
+    $("#task-input").value = "";
+    showMessage("Vazifa qo‘shildi! ✅");
+  } catch {
+    showMessage("Vazifa saqlanmadi.");
+  }
+});
+
+// Maqsad, summa va tarixni ekranga chiqarish
+function render() {
+  const total = balance();
+  const target = goal.amount;
+  const percent = target > 0
+    ? Math.min(100, Math.round(total / target * 100))
+    : 0;
+
+  $("#balance").textContent = money(total);
+  $("#goal-total").textContent = money(target);
+  $("#remaining").textContent = money(Math.max(0, target - total));
+  $("#goal-name").value = goal.name;
+  $("#goal-amount").value = target || "";
+  $("#percent").textContent = percent + "% bajarildi";
+  $("#progress-text").textContent = money(total) + " / " + money(target);
+  $("#progress-bar").style.width = percent + "%";
+
+  const history = $("#history");
+  history.innerHTML = "";
+  $("#no-history").classList.toggle("hidden", transactions.length > 0);
+
+  transactions.slice(0, 30).forEach(item => {
+    const row = document.createElement("div");
+    row.className = "history-item";
+
+    const note = item.note || (item.type === "income" ? "Pul qo‘shildi" : "Xarajat");
+    const date = item.createdAt?.toDate
+      ? item.createdAt.toDate().toLocaleDateString("uz-UZ")
+      : "Yangi yozuv";
+
+    row.innerHTML = `
+      <div class="history-note">
+        ${escapeHTML(note)}
+        <small>${escapeHTML(date)}</small>
+      </div>
+      <strong class="${item.type === "income" ? "income" : "expense"}">
+        ${item.type === "income" ? "+" : "−"}${escapeHTML(money(item.amount))}
+      </strong>`;
+    history.appendChild(row);
+  });
+}
+
+// Vazifalarni chiqarish
+function renderTasks() {
+  const list = $("#task-list");
+  list.innerHTML = "";
+  $("#no-tasks").classList.toggle("hidden", tasks.length > 0);
+
+  tasks.forEach(task => {
+    const row = document.createElement("div");
+    row.className = "task-item" + (task.done ? " done" : "");
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = Boolean(task.done);
+
+    checkbox.addEventListener("change", async () => {
+      try {
+        await updateDoc(doc(db, "users", user.uid, "tasks", task.id), {
+          done: checkbox.checked
+        });
+      } catch {
+        showMessage("Vazifani yangilab bo‘lmadi.");
+      }
+    });
+
+    const text = document.createElement("span");
+    text.textContent = task.title;
+
+    const remove = document.createElement("button");
+    remove.className = "delete";
+    remove.textContent = "×";
+    remove.title = "Vazifani o‘chirish";
+
+    remove.addEventListener("click", async () => {
+      try {
+        await deleteDoc(doc(db, "users", user.uid, "tasks", task.id));
+        showMessage("Vazifa o‘chirildi.");
+      } catch {
+        showMessage("Vazifani o‘chirib bo‘lmadi.");
+      }
+    });
+
+    row.append(checkbox, text, remove);
+    list.appendChild(row);
+  });
+}

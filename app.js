@@ -33,16 +33,16 @@ const telegramLink = "https://t.me/abdukabirov_08";
 
 let loginAttempts = 0;
 
-function showMessage(text) {
+function showError(text) {
     message.textContent = text;
 }
 
 function showTelegramHelp() {
-    message.replaceChildren();
+    message.textContent = "";
 
     const text = document.createElement("p");
     text.textContent =
-        "3 ta noto‘g‘ri urinish amalga oshirildi. Yordam uchun:";
+        "3 marta noto‘g‘ri urinish bo‘ldi. Yordam olish uchun:";
 
     const link = document.createElement("a");
     link.href = telegramLink;
@@ -56,13 +56,13 @@ function showTelegramHelp() {
 loginForm.addEventListener("submit", async function (event) {
     event.preventDefault();
 
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
     if (loginAttempts >= 3) {
         showTelegramHelp();
         return;
     }
-
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
 
     loginButton.disabled = true;
     loginButton.textContent = "Tekshirilmoqda...";
@@ -71,16 +71,19 @@ loginForm.addEventListener("submit", async function (event) {
         await signInWithEmailAndPassword(auth, email, password);
 
         loginAttempts = 0;
-        showMessage("Hisobingizga muvaffaqiyatli kirdingiz! 🎉");
+        showError("Muvaffaqiyatli kirding! 🎉");
 
+        // Saytingdagi asosiy sahifa kodini shu yerga ulash kerak.
+        // Agar mavjud loyihangda ekranlarni almashtirish kodi bo‘lsa,
+        // uni shu yerda chaqir.
     } catch (error) {
         loginAttempts++;
 
         if (loginAttempts >= 3) {
             showTelegramHelp();
         } else {
-            showMessage(
-                `Email yoki parol noto‘g‘ri. Urinish: ${loginAttempts}/3`
+            showError(
+                `Email yoki parol xato. Urinish: ${loginAttempts}/3`
             );
         }
     } finally {
@@ -94,34 +97,24 @@ registerButton.addEventListener("click", async function () {
     const password = passwordInput.value;
 
     if (!email || !password) {
-        showMessage("Avval email va parolingizni kiriting.");
+        showError("Avval email va parolingni kirit.");
         return;
     }
 
     if (password.length < 6) {
-        showMessage("Parol kamida 6 ta belgidan iborat bo‘lishi kerak.");
+        showError("Parol kamida 6 ta belgidan iborat bo‘lsin.");
         return;
     }
 
-    registerButton.disabled = true;
-    registerButton.textContent = "Hisob yaratilmoqda...";
-
     try {
         await createUserWithEmailAndPassword(auth, email, password);
-
-        showMessage("Hisobingiz muvaffaqiyatli yaratildi! 🎉");
-
+        showError("Hisob muvaffaqiyatli yaratildi! 🎉");
     } catch (error) {
         if (error.code === "auth/email-already-in-use") {
-            showMessage("Bu email bilan hisob allaqachon mavjud.");
-        } else if (error.code === "auth/invalid-email") {
-            showMessage("Email manzilingizni tekshiring.");
+            showError("Bu email bilan hisob avval yaratilgan.");
         } else {
-            showMessage("Hisob yaratilmadi. Qayta urinib ko‘ring.");
+            showError("Hisob yaratilmadi. Ma’lumotlarni tekshir.");
         }
-    } finally {
-        registerButton.disabled = false;
-        registerButton.textContent = "Yangi hisob yaratish";
     }
 });
 
@@ -131,20 +124,14 @@ resetPassword.addEventListener("click", async function (event) {
     const email = emailInput.value.trim();
 
     if (!email) {
-        showMessage("Avval email manzilingizni kiriting.");
-        emailInput.focus();
+        showError("Parolni tiklash uchun avval emailingni yoz.");
         return;
     }
 
     try {
         await sendPasswordResetEmail(auth, email);
-
-        showMessage(
-            "Parolni tiklash bo‘yicha ko‘rsatma emailingizga yuborildi."
-        );
+        showError("Parolni tiklash havolasi emailingga yuborildi.");
     } catch (error) {
-        showMessage(
-            "Emailni tekshiring yoki keyinroq qayta urinib ko‘ring."
-        );
+        showError("Emailni tekshir yoki keyinroq qayta urinib ko‘r.");
     }
 });
